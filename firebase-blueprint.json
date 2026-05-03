@@ -1,0 +1,103 @@
+{
+  "entities": {
+    "Case": {
+      "title": "Clinical Case",
+      "description": "Details of an overbooking case",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "unit": { "type": "string" },
+        "name": { "type": "string" },
+        "pid": { "type": "string" },
+        "phone": { "type": "string" },
+        "notes": { "type": "string" },
+        "time": { "type": "string" },
+        "by": { "type": "string" },
+        "result": { "type": "string" }
+      },
+      "required": ["id", "unit", "name", "pid", "by", "time"]
+    },
+    "DayData": {
+      "title": "Day Data",
+      "description": "Data for a specific day",
+      "type": "object",
+      "properties": {
+        "__locked": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "Clinic": {
+      "title": "Clinic",
+      "description": "Clinic definition",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "emoji": { "type": "string" },
+        "max": { "type": "number" },
+        "icon": { "type": "string" }
+      },
+      "required": ["id", "name"]
+    },
+    "UserData": {
+      "title": "User",
+      "description": "System user",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "pass": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "user"] }
+      },
+      "required": ["name", "pass", "role"]
+    },
+    "AuditLog": {
+      "title": "Audit Log",
+      "description": "System action log",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "action": { "type": "string" },
+        "details": { "type": "string" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["id", "userName", "action", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/overbooking/{date}": {
+      "schema": "DayData",
+      "description": "Contains clinic lists and locks for a date"
+    },
+    "/overbooking/{date}/clinics/{clinicId}": {
+       "schema": { "type": "object", "properties": { "cases": { "type": "array", "items": { "$ref": "Case" } } } },
+       "description": "List of cases for a specific clinic on a specific date"
+    },
+    "/settings/global": {
+      "schema": {
+        "type": "object",
+        "properties": {
+          "adminPass": { "type": "string" },
+          "maxPerClinic": { "type": "number" },
+          "closedDays": { "type": "array", "items": { "type": "number" } },
+          "units": { "type": "array", "items": { "type": "string" } },
+          "navActiveColor": { "type": "string" },
+          "googleSheetsWebhook": { "type": "string" }
+        }
+      },
+      "description": "Global system settings"
+    },
+    "/clinics/{clinicId}": {
+      "schema": "Clinic",
+      "description": "Clinic definitions"
+    },
+    "/users/{userName}": {
+      "schema": "UserData",
+      "description": "User accounts"
+    },
+    "/logs/{logId}": {
+      "schema": "AuditLog",
+      "description": "Audit trail"
+    }
+  }
+}

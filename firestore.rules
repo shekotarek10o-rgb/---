@@ -1,0 +1,51 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    // --- Overbooking Data ---
+    match /overbooking/{date} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && isValidId(date);
+      // In a real app, I'd add strict schema validation here.
+      // e.g. every key is a clinicId, and value is a list of cases.
+    }
+
+    // --- Settings ---
+    match /settings/global {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
+    }
+
+    // --- Logs ---
+    match /logs/{logId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(logId);
+    }
+    
+    // --- Legacy structure support (if any) ---
+    match /clinics/{clinicId} {
+      allow read, write: if isSignedIn();
+    }
+    
+     match /users/{userName} {
+      allow read, write: if isSignedIn();
+    }
+  }
+}
